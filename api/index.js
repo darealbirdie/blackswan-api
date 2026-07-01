@@ -88,10 +88,6 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
 
 const port = process.env.PORT || 3001;
 
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log(`API running on port ${port}`);
-  });
-}
-
-module.exports = app;
+app.listen(port, () => {
+  console.log(`🚀 BlackSwan API running on port ${port}`);
+});

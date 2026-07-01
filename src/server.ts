@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import serverless from "serverless-http";
 import { BlackSwanClient, Network } from "blackswan-sdk";
 
 const app = express();
@@ -86,12 +87,11 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3001;
-
 if (process.env.NODE_ENV !== "production") {
+  const port = process.env.PORT || 3001;
   app.listen(port, () => {
     console.log(`API running on port ${port}`);
   });
 }
 
-module.exports = app;
+module.exports = serverless(app);

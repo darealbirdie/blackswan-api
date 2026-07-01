@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import serverless from "serverless-http";
 import { BlackSwanClient, Network } from "blackswan-sdk";
 
 const app = express();
@@ -94,4 +93,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-module.exports = serverless(app);
+export default app;

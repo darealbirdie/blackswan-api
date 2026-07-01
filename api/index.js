@@ -1,8 +1,7 @@
-import express from 'express';
-import cors from 'cors';
-import { BlackSwanClient, Network } from 'blackswan-sdk';
-import dotenv from 'dotenv';
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+const { BlackSwanClient } = require('blackswan-sdk');
 
 const app = express();
 app.use(cors());
@@ -95,4 +94,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-export default app;
+module.exports = app;

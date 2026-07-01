@@ -1,14 +1,13 @@
 {
   "name": "blackswan-api",
   "version": "1.0.0",
-  "main": "dist/server.js",
+  "main": "api/index.js",
   "engines": {
-    "node": "24.x"
+    "node": "20.x"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc"
+    "dev": "node api/index.js",
+    "start": "node api/index.js"
   },
   "license": "MIT",
   "description": "REST API for BlackSwan Protocol",
@@ -17,12 +16,5 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1"
-  },
-  "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.0.1",
-    "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
   }
 }

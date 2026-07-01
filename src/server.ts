@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 import serverless from "serverless-http";
 import { BlackSwanClient, Network } from "blackswan-sdk";
 
@@ -94,4 +93,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-module.exports = serverless(app);
+export default serverless(app);

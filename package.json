@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "build": "tsc",
-    "vercel-build": "tsc"
+    "build": "tsc"
   },
   "license": "MIT",
   "description": "REST API for BlackSwan Protocol",

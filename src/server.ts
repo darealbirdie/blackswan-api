@@ -14,7 +14,6 @@ function serializeBigInts(obj: any): any {
 const defaultNetwork = (process.env.NETWORK as Network) || "amoy";
 const defaultRpcUrl = process.env.RPC_URL || "https://polygon-amoy.g.alchemy.com/v2/YOUR_API_KEY";
 
-// RPC URLs per network
 const rpcUrls: Record<Network, string> = {
   amoy: process.env.AMOY_RPC_URL || defaultRpcUrl,
   sepolia: process.env.SEPOLIA_RPC_URL || defaultRpcUrl,
@@ -88,6 +87,12 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
 });
 
 const port = process.env.PORT || 3001;
-app.listen(port, () => {
+
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
     console.log(`API running on port ${port}`);
-});
+  });
+}
+
+module.exports = app;
+export default app;

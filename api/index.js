@@ -66,7 +66,7 @@ app.get("/v1/credit/:wallet", async (req, res) => {
     res.json({
       trustRatio: Number(trustRatio),
       trustTierScore: tierFromScore(Number(trustRatio)),
-      tier: tier,
+      tier: Number(tier),
       currentApr: Number(currentApr),
       totalBorrowedUsd: Number(totalBorrowedUsd) / 1e18,
       totalRepaidUsd: Number(totalRepaidUsd) / 1e18,
@@ -134,7 +134,7 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
       successfulLoans: Number(successfulLoans),
       defaults: Number(defaults),
       loansTaken: Number(loansTaken),
-      tier: tier,
+      tier: Number(tier),
       trustTierScore: tierFromScore(Number(trustRatio)),
       trustRatio: Number(trustRatio)
     });

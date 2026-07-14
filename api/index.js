@@ -6,6 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+function serializeBigInts(obj) {
+  return JSON.parse(JSON.stringify(obj, (k, v) => typeof v === 'bigint' ? v.toString() : v));
+}
+
 const SBT_ABI = [
   "function balanceOf(address user) view returns (uint256)",
   "function userTokenId(address) view returns (uint256)",
@@ -43,7 +47,8 @@ function tierFromScore(score) {
 }
 
 function formatUsd(value) {
-  return `$${Number(value) / 1e18}`;
+  if (typeof value === 'bigint') value = Number(value);
+  return `$${value / 1e18}`;
 }
 
 function getContractForNetwork(network) {
@@ -80,7 +85,7 @@ app.get("/v1/credit/:wallet", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching credit dashboard:", error);
-    res.status(500).json({ error: error.message || String(error) });
+    res.status(500).json({ error: String(error) });
   }
 });
 

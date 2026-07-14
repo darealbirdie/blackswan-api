@@ -1,41 +1,83 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-const { BlackSwanClient } = require('blackswan-sdk');
+const { ethers } = require('ethers');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-function serializeBigInts(obj) {
-  return JSON.parse(JSON.stringify(obj, (k, v) => typeof v === "bigint" ? v.toString() : v));
-}
+const SBT_ABI = [
+  "function balanceOf(address user) view returns (uint256)",
+  "function userTokenId(address) view returns (uint256)",
+  "function hasSoul(address user) view returns (bool)",
+  "function tokenOf(address user) view returns (uint256)",
+  "function getCreditDashboard(address user) view returns (uint256 trustRatio, uint256 currentApr, uint256 totalBorrowedUsd, uint256 totalRepaidUsd, uint256 principalRepaidUsd, uint256 interestRepaidUsd, uint256 successfulLoans, uint256 defaults, uint8 tier)",
+  "function getCreditDashboardByTokenId(uint256 tokenId) view returns (address user, uint256 trustRatio, uint256 currentApr, uint256 totalBorrowedUsd, uint256 totalRepaidUsd, uint256 principalRepaidUsd, uint256 interestRepaidUsd, uint256 successfulLoans, uint256 defaults, uint8 tier)",
+  "function getCreditHistory(address user) view returns (uint256 loansTaken, uint256 totalBorrowed, uint256, uint256 totalRepaid, uint256)",
+  "function getReputation(address user) view returns (uint256 repaidVolume, uint256 successfulLoans, uint256 defaults, uint256 loansTaken, uint8 tier, uint256 trustRatio)",
+  "function getReputationByTokenId(uint256 tokenId) view returns (address user, uint256 repaidVolume, uint256 successfulLoans, uint256 defaults, uint256 loansTaken, uint8 tier, uint256 trustRatio)",
+  "function getTrustRatio(address user) view returns (uint256)",
+  "function getTrustTier(address user) view returns (string)",
+  "function getCurrentRisk(address user) view returns (uint256)"
+];
 
-const defaultNetwork = process.env.NETWORK || "amoy";
-const defaultRpcUrl = process.env.RPC_URL || "https://polygon-amoy.g.alchemy.com/v2/YOUR_API_KEY";
-
-const rpcUrls = {
-  amoy: process.env.AMOY_RPC_URL || defaultRpcUrl,
-  sepolia: process.env.SEPOLIA_RPC_URL || defaultRpcUrl,
-  polygon: process.env.POLYGON_RPC_URL || defaultRpcUrl,
-  mainnet: process.env.MAINNET_RPC_URL || defaultRpcUrl
+const CONTRACT_ADDRESSES = {
+  amoy: "0x4bdF83dA3f6cce61dfDDAce51c92E696f8e00171",
+  sepolia: "0xc7432A7973a2c58feBA0B194bbbbf22947946BBc"
 };
 
-function getClientForNetwork(network) {
-  const rpcUrl = rpcUrls[network];
-  return new BlackSwanClient({ network, rpcUrl });
+const RPC_URLS = {
+  amoy: process.env.AMOY_RPC_URL || "https://polygon-amoy.g.alchemy.com/v2/demo",
+  sepolia: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/demo"
+};
+
+const defaultNetwork = process.env.NETWORK || "amoy";
+
+function tierFromScore(score) {
+  if (score >= 9000) return "AAA";
+  if (score >= 8000) return "AA";
+  if (score >= 7000) return "A";
+  if (score >= 6000) return "BBB";
+  if (score >= 5000) return "BB";
+  return "B";
+}
+
+function formatUsd(value) {
+  return `$${Number(value) / 1e18}`;
+}
+
+function getContractForNetwork(network) {
+  const rpcUrl = RPC_URLS[network];
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  const address = CONTRACT_ADDRESSES[network];
+  if (!address) throw new Error(`Unsupported network: ${network}`);
+  return new ethers.Contract(address, SBT_ABI, provider);
 }
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", defaultNetwork, supportedNetworks: ["amoy", "sepolia", "polygon", "mainnet"] });
+  res.json({ status: "ok", defaultNetwork, supportedNetworks: ["amoy", "sepolia"] });
 });
 
 app.get("/v1/credit/:wallet", async (req, res) => {
   try {
     const network = req.query.network || defaultNetwork;
-    const client = getClientForNetwork(network);
-    const dashboard = await client.getCreditDashboard(req.params.wallet);
-    res.json(serializeBigInts(dashboard));
+    const contract = getContractForNetwork(network);
+    const [trustRatio, currentApr, totalBorrowedUsd, totalRepaidUsd, principalRepaidUsd, interestRepaidUsd, successfulLoans, defaults, tier] = await contract.getCreditDashboard(req.params.wallet);
+    res.json({
+      trustRatio: Number(trustRatio),
+      trustTierScore: tierFromScore(Number(trustRatio)),
+      tier: tier,
+      currentApr: Number(currentApr),
+      totalBorrowedUsd: Number(totalBorrowedUsd) / 1e18,
+      totalRepaidUsd: Number(totalRepaidUsd) / 1e18,
+      principalRepaidUsd: Number(principalRepaidUsd) / 1e18,
+      interestRepaidUsd: Number(interestRepaidUsd) / 1e18,
+      interestRepaidUsdFormatted: formatUsd(interestRepaidUsd),
+      successfulLoans: Number(successfulLoans),
+      defaults: Number(defaults),
+      totalBorrowedUsdFormatted: formatUsd(totalBorrowedUsd),
+      totalRepaidUsdFormatted: formatUsd(totalRepaidUsd)
+    });
   } catch (error) {
     console.error("Error fetching credit dashboard:", error);
     res.status(500).json({ error: error.message || String(error) });
@@ -45,9 +87,9 @@ app.get("/v1/credit/:wallet", async (req, res) => {
 app.get("/v1/apr/:wallet", async (req, res) => {
   try {
     const network = req.query.network || defaultNetwork;
-    const client = getClientForNetwork(network);
-    const apr = await client.getCurrentApr(req.params.wallet);
-    res.json({ apr });
+    const contract = getContractForNetwork(network);
+    const apr = await contract.getCurrentRisk(req.params.wallet);
+    res.json({ apr: Number(apr) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -56,9 +98,9 @@ app.get("/v1/apr/:wallet", async (req, res) => {
 app.get("/v1/tier/:wallet", async (req, res) => {
   try {
     const network = req.query.network || defaultNetwork;
-    const client = getClientForNetwork(network);
-    const tier = await client.getTrustTier(req.params.wallet);
-    res.json({ tier });
+    const contract = getContractForNetwork(network);
+    const trustRatio = await contract.getTrustRatio(req.params.wallet);
+    res.json({ tier: tierFromScore(Number(trustRatio)) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -67,9 +109,15 @@ app.get("/v1/tier/:wallet", async (req, res) => {
 app.get("/v1/history/:wallet", async (req, res) => {
   try {
     const network = req.query.network || defaultNetwork;
-    const client = getClientForNetwork(network);
-    const history = await client.getCreditHistory(req.params.wallet);
-    res.json(serializeBigInts(history));
+    const contract = getContractForNetwork(network);
+    const [loansTaken, totalBorrowed, _unused1, totalRepaid, _unused2] = await contract.getCreditHistory(req.params.wallet);
+    res.json({
+      loansTaken: Number(loansTaken),
+      totalBorrowed: Number(totalBorrowed) / 1e18,
+      totalRepaid: Number(totalRepaid) / 1e18,
+      totalBorrowedFormatted: formatUsd(totalBorrowed),
+      totalRepaidFormatted: formatUsd(totalRepaid)
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -78,16 +126,36 @@ app.get("/v1/history/:wallet", async (req, res) => {
 app.get("/v1/reputation/:wallet", async (req, res) => {
   try {
     const network = req.query.network || defaultNetwork;
-    const client = getClientForNetwork(network);
-    const reputation = await client.getReputation(req.params.wallet);
-    res.json(serializeBigInts(reputation));
+    const contract = getContractForNetwork(network);
+    const [repaidVolume, successfulLoans, defaults, loansTaken, tier, trustRatio] = await contract.getReputation(req.params.wallet);
+    res.json({
+      repaidVolume: Number(repaidVolume) / 1e18,
+      repaidVolumeFormatted: formatUsd(repaidVolume),
+      successfulLoans: Number(successfulLoans),
+      defaults: Number(defaults),
+      loansTaken: Number(loansTaken),
+      tier: tier,
+      trustTierScore: tierFromScore(Number(trustRatio)),
+      trustRatio: Number(trustRatio)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/v1/soul/:wallet", async (req, res) => {
+  try {
+    const network = req.query.network || defaultNetwork;
+    const contract = getContractForNetwork(network);
+    const hasSoul = await contract.hasSoul(req.params.wallet);
+    const tokenId = await contract.tokenOf(req.params.wallet);
+    res.json({ hasSoul, tokenId: Number(tokenId) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 const port = process.env.PORT || 3001;
-
 app.listen(port, () => {
   console.log(`🚀 BlackSwan API running on port ${port}`);
 });

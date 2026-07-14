@@ -25,6 +25,9 @@ curl https://api.blackswanfinance.xyz/v1/history/0x4EEA76237a91880B1c8B7a1c74061
 
 # Reputation
 curl https://api.blackswanfinance.xyz/v1/reputation/0x4EEA76237a91880B1c8B7a1c740610fFC0306EE4
+
+# Soul check (has SBT)
+curl https://api.blackswanfinance.xyz/v1/soul/0x4EEA76237a91880B1c8B7a1c740610fFC0306EE4
 ```
 
 ## Response Format
@@ -33,14 +36,45 @@ curl https://api.blackswanfinance.xyz/v1/reputation/0x4EEA76237a91880B1c8B7a1c74
 ```json
 {
   "trustRatio": 7700,
-  "trustTierScore": "C",
+  "trustTierScore": "A",
+  "tier": 0,
   "currentApr": 142,
   "totalBorrowedUsd": "99",
   "totalRepaidUsd": "99",
+  "principalRepaidUsd": "99",
+  "interestRepaidUsd": "0",
+  "interestRepaidUsdFormatted": "$0",
   "successfulLoans": 1,
-  "defaults": 0
+  "defaults": 0,
+  "totalBorrowedUsdFormatted": "$99",
+  "totalRepaidUsdFormatted": "$99"
 }
 ```
+
+### `/v1/reputation/:wallet`
+```json
+{
+  "repaidVolume": "74978253998840000000",
+  "repaidVolumeFormatted": "$74.98",
+  "successfulLoans": 1,
+  "defaults": 0,
+  "loansTaken": 1,
+  "tier": 0,
+  "trustTierScore": "A",
+  "trustRatio": 7700
+}
+```
+
+## Trust Tier Mapping
+
+| Score | Tier |
+|-------|------|
+| >= 9000 | AAA |
+| >= 8000 | AA |
+| >= 7000 | A |
+| >= 6000 | BBB |
+| >= 5000 | BB |
+| < 5000 | B |
 
 ## Environment Variables
 

@@ -115,8 +115,8 @@ app.get("/v1/history/:wallet", async (req, res) => {
       loansTaken: Number(loansTaken),
       totalBorrowed: String(totalBorrowed),
       totalRepaid: String(totalRepaid),
-      totalBorrowedFormatted: `$${String(totalBorrowed)}`,
-      totalRepaidFormatted: `$${String(totalRepaid)}`
+      totalBorrowedFormatted: `$${Number(totalBorrowed) / 1e18}`,
+      totalRepaidFormatted: `$${Number(totalRepaid) / 1e18}`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -130,7 +130,7 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
     const [repaidVolume, successfulLoans, defaults, loansTaken, tier, trustRatio] = await contract.getReputation(req.params.wallet);
     res.json({
       repaidVolume: String(repaidVolume),
-      repaidVolumeFormatted: `$${String(repaidVolume)}`,
+      repaidVolumeFormatted: `$${Number(repaidVolume) / 1e18}`,
       successfulLoans: Number(successfulLoans),
       defaults: Number(defaults),
       loansTaken: Number(loansTaken),

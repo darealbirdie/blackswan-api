@@ -46,11 +46,6 @@ function tierFromScore(score) {
   return "B";
 }
 
-function formatUsd(value) {
-  if (typeof value === 'bigint') value = Number(value);
-  return `$${value / 1e18}`;
-}
-
 function getContractForNetwork(network) {
   const rpcUrl = RPC_URLS[network];
   const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -73,15 +68,15 @@ app.get("/v1/credit/:wallet", async (req, res) => {
       trustTierScore: tierFromScore(Number(trustRatio)),
       tier: Number(tier),
       currentApr: Number(currentApr),
-      totalBorrowedUsd: Number(totalBorrowedUsd),
-      totalRepaidUsd: Number(totalRepaidUsd),
-      principalRepaidUsd: Number(principalRepaidUsd),
-      interestRepaidUsd: Number(interestRepaidUsd),
-      interestRepaidUsdFormatted: formatUsd(interestRepaidUsd),
+      totalBorrowedUsd: String(totalBorrowedUsd),
+      totalRepaidUsd: String(totalRepaidUsd),
+      principalRepaidUsd: String(principalRepaidUsd),
+      interestRepaidUsd: String(interestRepaidUsd),
+      interestRepaidUsdFormatted: `$${String(interestRepaidUsd)}`,
       successfulLoans: Number(successfulLoans),
       defaults: Number(defaults),
-      totalBorrowedUsdFormatted: formatUsd(totalBorrowedUsd),
-      totalRepaidUsdFormatted: formatUsd(totalRepaidUsd)
+      totalBorrowedUsdFormatted: `$${String(totalBorrowedUsd)}`,
+      totalRepaidUsdFormatted: `$${String(totalRepaidUsd)}`
     });
   } catch (error) {
     console.error("Error fetching credit dashboard:", error);
@@ -118,10 +113,10 @@ app.get("/v1/history/:wallet", async (req, res) => {
     const [loansTaken, totalBorrowed, _unused1, totalRepaid, _unused2] = await contract.getCreditHistory(req.params.wallet);
     res.json({
       loansTaken: Number(loansTaken),
-      totalBorrowed: Number(totalBorrowed),
-      totalRepaid: Number(totalRepaid),
-      totalBorrowedFormatted: `$${Number(totalBorrowed)}`,
-      totalRepaidFormatted: `$${Number(totalRepaid)}`
+      totalBorrowed: String(totalBorrowed),
+      totalRepaid: String(totalRepaid),
+      totalBorrowedFormatted: `$${String(totalBorrowed)}`,
+      totalRepaidFormatted: `$${String(totalRepaid)}`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -134,8 +129,8 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
     const contract = getContractForNetwork(network);
     const [repaidVolume, successfulLoans, defaults, loansTaken, tier, trustRatio] = await contract.getReputation(req.params.wallet);
     res.json({
-      repaidVolume: Number(repaidVolume),
-      repaidVolumeFormatted: `$${Number(repaidVolume)}`,
+      repaidVolume: String(repaidVolume),
+      repaidVolumeFormatted: `$${String(repaidVolume)}`,
       successfulLoans: Number(successfulLoans),
       defaults: Number(defaults),
       loansTaken: Number(loansTaken),

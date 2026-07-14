@@ -73,10 +73,10 @@ app.get("/v1/credit/:wallet", async (req, res) => {
       trustTierScore: tierFromScore(Number(trustRatio)),
       tier: Number(tier),
       currentApr: Number(currentApr),
-      totalBorrowedUsd: Number(totalBorrowedUsd) / 1e18,
-      totalRepaidUsd: Number(totalRepaidUsd) / 1e18,
-      principalRepaidUsd: Number(principalRepaidUsd) / 1e18,
-      interestRepaidUsd: Number(interestRepaidUsd) / 1e18,
+      totalBorrowedUsd: Number(totalBorrowedUsd),
+      totalRepaidUsd: Number(totalRepaidUsd),
+      principalRepaidUsd: Number(principalRepaidUsd),
+      interestRepaidUsd: Number(interestRepaidUsd),
       interestRepaidUsdFormatted: formatUsd(interestRepaidUsd),
       successfulLoans: Number(successfulLoans),
       defaults: Number(defaults),
@@ -118,10 +118,10 @@ app.get("/v1/history/:wallet", async (req, res) => {
     const [loansTaken, totalBorrowed, _unused1, totalRepaid, _unused2] = await contract.getCreditHistory(req.params.wallet);
     res.json({
       loansTaken: Number(loansTaken),
-      totalBorrowed: Number(totalBorrowed) / 1e18,
-      totalRepaid: Number(totalRepaid) / 1e18,
-      totalBorrowedFormatted: formatUsd(totalBorrowed),
-      totalRepaidFormatted: formatUsd(totalRepaid)
+      totalBorrowed: Number(totalBorrowed),
+      totalRepaid: Number(totalRepaid),
+      totalBorrowedFormatted: `$${Number(totalBorrowed)}`,
+      totalRepaidFormatted: `$${Number(totalRepaid)}`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -134,8 +134,8 @@ app.get("/v1/reputation/:wallet", async (req, res) => {
     const contract = getContractForNetwork(network);
     const [repaidVolume, successfulLoans, defaults, loansTaken, tier, trustRatio] = await contract.getReputation(req.params.wallet);
     res.json({
-      repaidVolume: Number(repaidVolume) / 1e18,
-      repaidVolumeFormatted: formatUsd(repaidVolume),
+      repaidVolume: Number(repaidVolume),
+      repaidVolumeFormatted: `$${Number(repaidVolume)}`,
       successfulLoans: Number(successfulLoans),
       defaults: Number(defaults),
       loansTaken: Number(loansTaken),

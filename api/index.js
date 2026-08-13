@@ -27,12 +27,14 @@ const SBT_ABI = [
 
 const CONTRACT_ADDRESSES = {
   amoy: "0x4bdF83dA3f6cce61dfDDAce51c92E696f8e00171",
-  sepolia: "0xc7432A7973a2c58feBA0B194bbbbf22947946BBc"
+  sepolia: "0xc7432A7973a2c58feBA0B194bbbbf22947946BBc",
+  coston2: "0x3DABf82D5f5698688b2F02Aea13F0a5fC3E19A29"
 };
 
 const RPC_URLS = {
-  amoy: process.env.AMOY_RPC_URL || "https://polygon-amoy.g.alchemy.com/v2/demo",
-  sepolia: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/demo"
+  amoy: process.env.AMOY_RPC_URL || "https://rpc.ankr.com/amoy",
+  sepolia: process.env.SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com",
+  coston2: process.env.COSTON2_RPC_URL || "https://coston2-api.flare.network/ext/C/rpc"
 };
 
 const defaultNetwork = process.env.NETWORK || "amoy";
@@ -55,7 +57,7 @@ function getContractForNetwork(network) {
 }
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", defaultNetwork, supportedNetworks: ["amoy", "sepolia"] });
+  res.json({ status: "ok", defaultNetwork, supportedNetworks: ["amoy", "sepolia", "coston2"] });
 });
 
 app.get("/v1/credit/:wallet", async (req, res) => {

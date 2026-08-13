@@ -1,6 +1,6 @@
 # BlackSwan API
 
-REST API for BlackSwan Protocol - Credit data endpoints for Amoy and Sepolia networks.
+REST API for BlackSwan Protocol - Credit data endpoints for Amoy, Sepolia, and Coston 2 networks.
 
 ## Endpoints
 
@@ -13,6 +13,9 @@ curl https://api.blackswanfinance.xyz/v1/credit/0x4EEA76237a91880B1c8B7a1c740610
 
 # Credit dashboard (Sepolia)
 curl "https://api.blackswanfinance.xyz/v1/credit/0x4EEA76237a91880B1c8B7a1c740610fFC0306EE4?network=sepolia"
+
+# Credit dashboard (Coston 2)
+curl "https://api.blackswanfinance.xyz/v1/credit/0x4EEA76237a91880B1c8B7a1c740610fFC0306EE4?network=coston2"
 
 # APR only
 curl https://api.blackswanfinance.xyz/v1/apr/0x4EEA76237a91880B1c8B7a1c740610fFC0306EE4
@@ -80,7 +83,8 @@ curl https://api.blackswanfinance.xyz/v1/soul/0x4EEA76237a91880B1c8B7a1c740610fF
 
 - `AMOY_RPC_URL` - Polygon Amoy RPC URL
 - `SEPOLIA_RPC_URL` - Ethereum Sepolia RPC URL
-- `NETWORK` - Default network (amoy/sepolia)
+- `COSTON2_RPC_URL` - Coston 2 RPC URL
+- `NETWORK` - Default network (amoy/sepolia/coston2)
 
 ## Development
 
